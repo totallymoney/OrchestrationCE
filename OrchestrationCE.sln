@@ -2,6 +2,10 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "OrchestrationCE", "src\OrchestrationCE.fsproj", "{B557C361-43C5-4776-BBC3-4CF7B9902E82}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{ACCA7D7F-5C45-4CC0-873D-2325503CA486}"
+EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "OrchestrationCETests", "test\OrchestrationCETests\OrchestrationCETests.fsproj", "{4AECBD99-E8A9-42D9-AF75-7A64BA90BB5C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -12,5 +16,12 @@ Global
 		{B557C361-43C5-4776-BBC3-4CF7B9902E82}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B557C361-43C5-4776-BBC3-4CF7B9902E82}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B557C361-43C5-4776-BBC3-4CF7B9902E82}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4AECBD99-E8A9-42D9-AF75-7A64BA90BB5C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4AECBD99-E8A9-42D9-AF75-7A64BA90BB5C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4AECBD99-E8A9-42D9-AF75-7A64BA90BB5C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4AECBD99-E8A9-42D9-AF75-7A64BA90BB5C}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{4AECBD99-E8A9-42D9-AF75-7A64BA90BB5C} = {ACCA7D7F-5C45-4CC0-873D-2325503CA486}
 	EndGlobalSection
 EndGlobal
