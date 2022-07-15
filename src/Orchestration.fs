@@ -1,4 +1,5 @@
 module OrchestrationCE.Orchestration
+open OrchestrationCE
 open OrchestrationCE.Workflow
 
 type CircuitBreaker<'T1, 'T2> =
@@ -16,19 +17,28 @@ let map f orchestration =
             | Continue y -> Continue (f y)
             | Break y -> Break y)
         
+let private circuitBreak f = function
+    | Continue y -> f y
+    | Break z -> fun _ -> { Result = z |> Break |> List.singleton; Next = None }
+    
+let switchMap f = Workflow.switchMap (circuitBreak f)
+let mergeMap f = Workflow.mergeMap (circuitBreak f)
+let concatMap f = Workflow.concatMap (circuitBreak f)
+let exhaustMap f = Workflow.exhaustMap (circuitBreak f)
+        
 let rec raiseToOrchestration workflow = function
     | Some event ->
         let { Result = result; Next = next } = workflow event
         { Result = result |> List.map Continue
           Next = Option.map raiseToOrchestration next }
     | None ->
-        { Result = []; Next = Some (raiseToOrchestration workflow) }
+        { Result = []; Next = None }
         
-let rec raiseToOrchestrationWithActions workflow actions = function
+let rec raiseToOrchestrationWithActions actions workflow = function
     | Some event ->
         let { Result = result; Next = next } = workflow event
         { Result = result |> List.map Continue
-          Next = Option.map (fun orc -> raiseToOrchestrationWithActions orc actions) next }
+          Next = Option.map (raiseToOrchestrationWithActions actions) next }
     | None ->
         { Result = [(Break actions)]; Next = None }
         
@@ -53,15 +63,12 @@ let rec zip orchestration1 orchestration2 event =
         { Result = []; Next = None }
     | _, _ ->
         raise (exn "non singular results from take 1")
-        
-let private circuitBreak f = function
-    | Continue y -> f y
-    | Break z -> fun _ -> { Result = z |> Break |> List.singleton; Next = None }
-        
+    
 type OrchestrationBuilder() =
+
     member __.Bind (m, f) =
-        m |> take 1 |> switchMap (circuitBreak f)
-        
+        m |> take 1 |> switchMap f
+   
     member __.Return(result) =
         retn result
         

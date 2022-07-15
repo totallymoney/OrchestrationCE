@@ -6,7 +6,23 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <Compile Include="Program.fs"/>
+        <Compile Include="TestEvents.fs" />
+        <Compile Include="SwitchMapTests.fs" />
+        <Compile Include="MergeMapTests.fs" />
+        <Compile Include="ConcatMapTests.fs" />
+        <Compile Include="ExhaustMapTests.fs" />
+        <Compile Include="OrchestrationCETests.fs" />
+        <Compile Include="Examples.fs" />
+        <Compile Include="Program.fs" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Expecto" Version="9.0.4" />
+      <PackageReference Include="FSharp.SystemTextJson" Version="0.19.13" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\..\src\OrchestrationCE.fsproj" />
     </ItemGroup>
 
 </Project>

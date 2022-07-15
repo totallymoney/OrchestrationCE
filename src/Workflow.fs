@@ -86,11 +86,17 @@ let switchMap f = map f >> switch
 let concatMap f = map f >> concat
 let exhaustMap f = map f >> exhaust
 
-let rec filter predicate orc =
-    orc
+let rec filter predicate workflow =
+    workflow
     >> (fun { Result = result; Next = next } ->
         let results' = List.filter predicate result
         { Result = results'; Next = Option.map (filter predicate) next })
+    
+let rec choose chooser workflow =
+    workflow
+    >> (fun { Result = result; Next = next } ->
+        let results' = List.choose chooser result
+        { Result = results'; Next = Option.map (choose chooser) next })
     
 let rec take count orc =
     orc
@@ -117,6 +123,9 @@ let rec zip workflow1 workflow2 e =
         { Result = []; Next = None }
     | _, _ ->
         raise (exn "non singular results from take 1")
+        
+let (<&>) workflow1 workflow2 event =
+    concatPair ((workflow1 event), (workflow2 event))
         
 type WorkflowBuilder() =
     member __.Bind (m, f) =
