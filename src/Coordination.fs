@@ -97,7 +97,7 @@ let rec choose chooser coordination =
     >> (fun { Result = result; Next = next } ->
         let results' = List.choose chooser result
         { Result = results'; Next = Option.map (choose chooser) next })
-    
+
 let rec take count coordination =
     coordination
     >> fun { Result = result;  Next = next } ->
