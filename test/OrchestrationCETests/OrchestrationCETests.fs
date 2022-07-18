@@ -2,7 +2,7 @@ module OrchestrationCETests.OrchestrationCETests
 
 open Expecto
 open OrchestrationCE
-open Workflow
+open Coordination
 open Orchestration
 open TestEvents
 open FSharp.Control.Tasks
@@ -119,7 +119,7 @@ let orchestrationCETests =
              do Expect.equal list [(Continue { Id = 4 }); (Continue { Id = 4 })] ""
              
         testCase "4" <| fun _ ->
-            let orc = workflow {
+            let orc = coordination {
                         let! x = (eventReceived |> filter (fun x -> x.Id = 1))
                         and! y = (eventReceived |> filter (fun x -> x.Id = 2))
                         and! z = (eventReceived |> filter (fun x -> x.Id = 3))
@@ -153,7 +153,7 @@ let orchestrationCETests =
                 orchestration {
                     let! r = raiseToOrchestrationWithActions
                                 [DoThing]
-                                (workflow {
+                                (coordination {
                                     let! a = (eventReceived |> filter (fun x -> x.Id = 1))
                                     and! b = (eventReceived |> filter (fun x -> x.Id = 2))
                                     and! c = (eventReceived |> filter (fun x -> x.Id = 3))
@@ -162,7 +162,7 @@ let orchestrationCETests =
                                 
                     let! r2 = raiseToOrchestrationWithActions
                                 [DoOtherThing]
-                                (workflow {
+                                (coordination {
                                     let! a = (eventReceived |> filter (fun x -> x.Id = 4))
                                     and! b = (eventReceived |> filter (fun x -> x.Id = 5))
                                     and! c = (eventReceived |> filter (fun x -> x.Id = 6))

@@ -1,18 +1,18 @@
 module OrchestrationCE.Orchestration
 open OrchestrationCE
-open OrchestrationCE.Workflow
+open OrchestrationCE.Coordination
 
 type CircuitBreaker<'T1, 'T2> =
     | Continue of 'T1
     | Break of 'T2 list
     
-type Orchestration<'a, 'b, 'c> = 'a -> Workflow<'a, CircuitBreaker<'b, 'c>>
+type Orchestration<'a, 'b, 'c> = 'a -> Coordination<'a, CircuitBreaker<'b, 'c>>
 
 let retn result _ = { Result = result |> Continue |> List.singleton; Next = None }
 
 let map f orchestration =
     orchestration
-    |> Workflow.map
+    |> Coordination.map
         (function
             | Continue y -> Continue (f y)
             | Break y -> Break y)
@@ -21,10 +21,10 @@ let private circuitBreak f = function
     | Continue y -> f y
     | Break z -> fun _ -> { Result = z |> Break |> List.singleton; Next = None }
     
-let switchMap f = Workflow.switchMap (circuitBreak f)
-let mergeMap f = Workflow.mergeMap (circuitBreak f)
-let concatMap f = Workflow.concatMap (circuitBreak f)
-let exhaustMap f = Workflow.exhaustMap (circuitBreak f)
+let switchMap f = Coordination.switchMap (circuitBreak f)
+let mergeMap f = Coordination.mergeMap (circuitBreak f)
+let concatMap f = Coordination.concatMap (circuitBreak f)
+let exhaustMap f = Coordination.exhaustMap (circuitBreak f)
         
 let rec raiseToOrchestration workflow = function
     | Some event ->

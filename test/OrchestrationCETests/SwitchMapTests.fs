@@ -2,7 +2,7 @@ module OrchestrationCETests.SwitchMapTests
 
 open OrchestrationCE
 open Expecto
-open Workflow
+open Coordination
 open TestEvents
 
 [<Tests>]

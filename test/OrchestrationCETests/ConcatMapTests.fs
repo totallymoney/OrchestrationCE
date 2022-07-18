@@ -2,7 +2,7 @@ module OrchestrationCETests.ConcatMapTests
 
 open Expecto
 open OrchestrationCE
-open Workflow
+open Coordination
 open TestEvents
 
 [<Tests>]

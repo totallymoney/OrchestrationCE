@@ -3,7 +3,7 @@ module OrchestrationCETests.TestEvents
 open System.Text.Json
 open System.Text.Json.Serialization
 open OrchestrationCE
-open Workflow
+open Coordination
 
 type Event = string option
 

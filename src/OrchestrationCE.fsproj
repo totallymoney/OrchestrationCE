@@ -6,7 +6,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <Compile Include="Workflow.fs" />
+        <Compile Include="Coordination.fs" />
         <Compile Include="Orchestration.fs" />
     </ItemGroup>
 

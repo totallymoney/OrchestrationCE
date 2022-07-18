@@ -3,7 +3,7 @@ module OrchestrationCETests.MergeMapTests
 
 open Expecto
 open OrchestrationCE
-open Workflow
+open Coordination
 open TestEvents
 
 [<Tests>]
