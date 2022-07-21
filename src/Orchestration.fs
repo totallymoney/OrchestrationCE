@@ -6,7 +6,7 @@ type CircuitBreaker<'T1, 'T2> =
     | Continue of 'T1
     | Break of 'T2 list
     
-type Orchestration<'a, 'b, 'c> = 'a -> Coordination<'a, CircuitBreaker<'b, 'c>>
+type Orchestration<'a, 'b, 'c> =  Coordination<'a option, CircuitBreaker<'b, 'c>>
 
 let retn result _ = { Result = result |> Continue |> List.singleton; Next = None }
 

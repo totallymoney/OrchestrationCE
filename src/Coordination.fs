@@ -107,6 +107,12 @@ let rec take count coordination =
                         then Option.map (take remainingCount) next
                         else None
             { Result = results';  Next = next' }
+          
+let rec event chooser e =
+    let result =
+        chooser e
+        |> Option.toList
+    { Result = result; Next = Some (event chooser) }
 
 let rec zip coordination1 coordination2 e =
     match (coordination1 |> take 1) e, (coordination2 |> take 1) e with
