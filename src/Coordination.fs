@@ -130,8 +130,43 @@ let rec zip coordination1 coordination2 e =
     | _, _ ->
         raise (exn "non singular results from take 1")
         
+let distinctUntilChanged coordination =
+    let rec distinctUntilChanged' currentValue coordination =
+        coordination >> fun result ->
+        match result, currentValue with
+        | { Result = result; Next = None }, None ->
+            { Result = result |> Seq.distinct |> Seq.toList; Next = None }
+        |  { Result = result; Next = Some next }, None ->
+            let distinctResults = result |> Seq.distinct |> Seq.toList
+            let last = distinctResults |> List.tryLast
+            { Result = distinctResults; Next = Some (distinctUntilChanged' last next) }
+        | { Result = result; Next = None }, Some currentValue ->
+            { Result = result |> Seq.distinct |> Seq.skipWhile (fun x -> x = currentValue) |> Seq.toList
+              Next = None }
+        | { Result = result; Next = Some next }, Some currentValue ->
+            let distinctResults = result |> Seq.distinct |> Seq.skipWhile (fun x -> x = currentValue) |> Seq.toList
+            let last = distinctResults |> List.tryLast |> Option.defaultValue currentValue
+            { Result = result |> Seq.distinct |> Seq.skipWhile (fun x -> x = currentValue) |> Seq.toList
+              Next = Some (distinctUntilChanged' (Some last) next) }
+    distinctUntilChanged' None coordination
+    
+let rec takeWhile condition coordination =
+    coordination
+    >> fun { Result = result;  Next = next } ->
+            let results' = result |> List.takeWhile condition
+            let difference = result.Length - results'.Length
+            let next' = if difference = 0
+                        then Option.map (takeWhile condition) next
+                        else None
+            { Result = results';  Next = next' }
+                 
 let (<&>) coordination coordination2 event =
     concatPair ((coordination event), (coordination2 event))
+    
+let takeWhileInclusive condition coordination =
+    let firstSection = coordination |> takeWhile condition
+    let firstFailingEvent = coordination |> filter (not << condition) |> take 1
+    fun e -> mergePair ((firstSection e), (firstFailingEvent e))
         
 type CoordinationBuilder() =
     member __.Bind (m, f) =
@@ -139,7 +174,11 @@ type CoordinationBuilder() =
         
     member __.Return(m) =
         retn m
-        
-    member _.MergeSources(coordination1, coordination2) = zip coordination1 coordination2
-     
+
+    member __.MergeSources(coordination1, coordination2) =
+        zip coordination1 coordination2
+
+    member __.Zero() =
+        retn ()
+
 let coordination = CoordinationBuilder()

@@ -12,6 +12,7 @@
         <Compile Include="ConcatMapTests.fs" />
         <Compile Include="ExhaustMapTests.fs" />
         <Compile Include="OrchestrationCETests.fs" />
+        <Compile Include="OperationsTests.fs" />
         <Compile Include="Program.fs" />
     </ItemGroup>
 
