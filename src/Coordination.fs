@@ -59,10 +59,10 @@ let rec private mergePair = function
       { Result = List.append result1 result2; Next = None }         
 
 let rec private concatPair = function
-    | { Result = result1; Next = None }, { Result = result2;  Next = next } ->
+    | { Result = result1; Next = None }, { Result = result2; Next = next } ->
         { Result = List.append result1 result2; Next = next }
-    | { Result = result; Next = Some next }, ({ Next = None; } as wfResult2) ->
-        { Result = result; Next = Some (fun e -> concatPair (next e, wfResult2)) }
+    | { Result = result; Next = Some next }, ({ Next = None; } as result2) ->
+        { Result = result; Next = Some (fun e -> concatPair (next e, result2)) }
     | { Result = result1; Next = Some next1 }, { Result = result2; Next = Some next2 } ->
         let next2'' e =
             let { Result = result''; Next = next2' } = next2 e
@@ -159,9 +159,17 @@ let rec takeWhile condition coordination =
                         then Option.map (takeWhile condition) next
                         else None
             { Result = results';  Next = next' }
+            
+let rec private appendPair coordination1 coordination2 e =
+    match coordination1 e with
+    | { Result = result; Next = Some next } ->
+        { Result = result; Next = Some (appendPair next coordination2) }
+    | { Result = result; Next = None } ->
+        let { Result = result2; Next = next2 } = coordination2 e
+        { Result = result @ result2; Next = next2 }
                  
-let (<&>) coordination coordination2 event =
-    concatPair ((coordination event), (coordination2 event))
+let (<&>) coordination coordination2 =
+    appendPair coordination coordination2
     
 let takeWhileInclusive condition coordination =
     let firstSection = coordination |> takeWhile condition
@@ -169,13 +177,28 @@ let takeWhileInclusive condition coordination =
     fun e -> mergePair ((firstSection e), (firstFailingEvent e))
         
 type CoordinationBuilder() =
-    member __.Bind (m, f) =
+    member _.Bind(m, f) =
         m |> take 1 |> switchMap f
         
-    member __.Return(m) =
+    member _.Return(m) =
         retn m
-
-    member __.MergeSources(coordination1, coordination2) =
+        
+    member _.ReturnFrom(m) =
+        m
+        
+    member _.Yield(x) =
+        retn x
+        
+    member _.YieldFrom(x) =
+        x
+        
+    member _.Combine(a,b) =
+        appendPair a b
+        
+    member _.Delay(f) =
+        f()
+        
+    member _.MergeSources(coordination1, coordination2) =
         zip coordination1 coordination2
 
     member __.Zero() =

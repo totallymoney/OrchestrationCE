@@ -66,13 +66,17 @@ let rec zip orchestration1 orchestration2 event =
     
 type OrchestrationBuilder() =
 
-    member __.Bind (m, f) =
+    member _.Bind (m, f) =
         m |> take 1 |> switchMap f
    
-    member __.Return(result) =
+    member _.Return(result) =
         retn result
         
-    member _.MergeSources(orchestration1, orchestration2) = zip orchestration1 orchestration2
+    member _.ReturnFrom (m) =
+        m
+        
+    member _.MergeSources(orchestration1, orchestration2) =
+        zip orchestration1 orchestration2
     
     member _.Zero() =
         retn ()
