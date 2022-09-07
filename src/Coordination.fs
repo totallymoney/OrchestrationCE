@@ -114,22 +114,42 @@ let rec event chooser e =
         |> Option.toList
     { Result = result; Next = Some (event chooser) }
 
-let rec zip coordination1 coordination2 e =
-    match (coordination1 |> take 1) e, (coordination2 |> take 1) e with
-    | { Result = []; Next = Some next1 }, { Result = []; Next = Some next2 } ->
-        { Result = []; Next = Some (zip next1 next2) }
-    | { Result = [result1]; Next = _ }, { Result = [result2]; Next = _ } ->
-        { Result = [(result1, result2)]; Next = None }
-    | { Result = [result]; Next = _ }, { Result = []; Next = Some next } ->
-        { Result = []; Next = Some (next |> map (fun x -> result, x)) }
-    | { Result = []; Next = Some next }, { Result = [result]; Next = _ } ->
-        { Result = []; Next = Some (next |> map (fun x -> x, result)) }
-    | { Result = []; Next = None }, _
-    | _, { Result = []; Next = None } ->
-        { Result = []; Next = None }
-    | _, _ ->
-        raise (exn "non singular results from take 1")
+
         
+let rec zip coordination1 coordination2 e =
+    match coordination1 e, coordination2 e with
+    | { Result = result1; Next = next1 }, { Result = result2; Next = next2 } when result1.Length > result2.Length ->
+        let taken, remaining = List.splitAt result2.Length result1
+        let getNext = function
+            | Some next1, Some next2 ->
+                let next1 e =
+                    let { Result = nextResult; Next = newNext } = next1 e
+                    { Result = remaining @ nextResult; Next = newNext }
+                Some (zip next1 next2)
+            | None, Some next2 ->
+                let next1 _ = { Result = remaining; Next = None }
+                Some (zip next1 next2)
+            | _ -> None
+        { Result = List.zip taken result2; Next = getNext (next1, next2) }
+    | { Result = result1; Next = next1 }, { Result = result2; Next = next2 } when result1.Length < result2.Length ->
+        let taken, remaining = List.splitAt result1.Length result2
+        let getNext = function
+            | Some next1, Some next2 ->
+                let next2 e =
+                    let { Result = nextResult; Next = newNext } = next2 e
+                    { Result = remaining @ nextResult; Next = newNext }
+                Some (zip next1 next2)
+            | Some next1, None ->
+                let next2 _ = { Result = remaining; Next = None }
+                Some (zip next1 next2)
+            | _ -> None
+        { Result = List.zip result1 taken; Next = getNext (next1, next2) }
+    | { Result = result1; Next = next1 }, { Result = result2; Next = next2 } ->
+        let getNext = function
+            | Some next1, Some next2 -> Some (zip next1 next2)
+            | _ -> None
+        { Result = List.zip result1 result2; Next = getNext (next1, next2) }
+
 let distinctUntilChanged coordination =
     let rec distinctUntilChanged' currentValue coordination =
         coordination >> fun result ->
@@ -167,9 +187,6 @@ let rec private appendPair coordination1 coordination2 e =
     | { Result = result; Next = None } ->
         let { Result = result2; Next = next2 } = coordination2 e
         { Result = result @ result2; Next = next2 }
-                 
-let (<&>) coordination coordination2 =
-    appendPair coordination coordination2
         
 type CoordinationBuilder() =
     member _.Bind(m, f) =
@@ -194,7 +211,7 @@ type CoordinationBuilder() =
         f()
         
     member _.MergeSources(coordination1, coordination2) =
-        zip coordination1 coordination2
+        zip (coordination1 |> take 1) (coordination2 |> take 1)
 
     member __.Zero() =
         retn ()
