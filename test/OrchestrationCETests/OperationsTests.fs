@@ -56,22 +56,5 @@ let operationsTests =
             Expect.isEmpty result4 ""
             Expect.isNone next4 ""
             
-        testCase "takeUntilInclusive" <| fun _ ->
-            let coordination =
-                event (function | Event1 x -> Some x)
-                |> takeWhileInclusive not
-                
-            let { Result = result; Next = next } = coordination (Event1 false)
-            Expect.equal result [ false ] ""
-                
-            let { Result = result2; Next = next2 } = next.Value (Event1 false)
-            Expect.equal result2 [ false ] ""
-            
-            let { Result = result3; Next = next3 } = next2.Value (Event1 false)
-            Expect.equal result3 [ false ] ""
-            
-            let { Result = result4; Next = next4 } = next3.Value (Event1 true)
-            Expect.equal result4 [ true ] ""
-            Expect.isNone next4 ""
         ]
     

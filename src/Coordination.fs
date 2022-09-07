@@ -170,11 +170,6 @@ let rec private appendPair coordination1 coordination2 e =
                  
 let (<&>) coordination coordination2 =
     appendPair coordination coordination2
-    
-let takeWhileInclusive condition coordination =
-    let firstSection = coordination |> takeWhile condition
-    let firstFailingEvent = coordination |> filter (not << condition) |> take 1
-    fun e -> mergePair ((firstSection e), (firstFailingEvent e))
         
 type CoordinationBuilder() =
     member _.Bind(m, f) =
